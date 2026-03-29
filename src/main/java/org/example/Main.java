@@ -1,17 +1,28 @@
 package org.example;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+        ConcurrentBank bank = new ConcurrentBank();
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+        BankAccount account1 = bank.createAccount(1000);
+        BankAccount account2 = bank.createAccount(500);
+
+        Thread transferThread1 = new Thread(() -> bank.transfer(account1, account2, 200));
+        Thread transferThread2 = new Thread(() -> bank.transfer(account2, account1, 100));
+
+        transferThread1.start();
+        transferThread2.start();
+
+        try {
+            transferThread1.join();
+            transferThread2.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            e.printStackTrace();
         }
+
+        System.out.println("Account 1 balance: " + account1.getBalance());
+        System.out.println("Account 2 balance: " + account2.getBalance());
+        System.out.println("Total balance: " + bank.getTotalBalance());
     }
 }
